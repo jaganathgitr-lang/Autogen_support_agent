@@ -7,8 +7,8 @@ autogen-ext[openai]>=0.7.5
 # --- UI ---
 streamlit>=1.64.0
 
-# --- Free web search used by every department agent (DuckDuckGo, no API key) ---
-ddgs>=9.16.0
+# --- Web search used by every department agent (google.serper.dev) ---
+requests>=2.34.2
 
-# --- Reads OPENAI_API_KEY from the .env file ---
+# --- Reads OPENAI_API_KEY / SERPER_API_KEY from the .env file ---
 python-dotenv>=1.2.3

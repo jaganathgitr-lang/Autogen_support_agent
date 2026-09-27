@@ -10,7 +10,7 @@ Manager        -- classifies the question into exactly one department
      |             (does not answer it itself)
      v
 IT / HR / Compliance / Admin / Account agent
-     |             -- answers the question, using DuckDuckGo web search
+     |             -- answers the question, using Serper web search
      |                when the answer needs a current fact or date
      v
 Streamlit UI shows the live routing decision, then the answer
@@ -29,7 +29,9 @@ Streamlit UI shows the live routing decision, then the answer
 | **Admin Agent** | Office facilities, supplies, travel booking, general admin requests. |
 | **Account Agent** | Billing, invoices, subscriptions, account/payment issues. |
 
-Every department agent has a free DuckDuckGo web search tool (`ddgs`, no API key needed) and is explicitly told today's real date, so it searches with the actual current year instead of guessing one from its training data -- confirmed live: asked "what is the end date to submit tax filing?" before this fix, the Compliance agent confidently answered with a 2022/2023 deadline; after the fix, it searches "tax filing deadline 2026" and returns the real, current answer.
+Every department agent has a web search tool backed by Serper (google.serper.dev -- the same search API used in the buildathon-support-crew and linkedin-post-crew projects, for consistency) and is explicitly told today's real date, so it searches with the actual current year instead of guessing one from its training data -- confirmed live: asked "what is the end date to submit tax filing?" before this fix, the Compliance agent confidently answered with a 2022/2023 deadline; after the fix, it searches "2026 tax filing deadline" and returns the real, current answer (IRS.gov: April 15, 2026).
+
+AutoGen's `AssistantAgent` takes plain Python callables as tools (unlike CrewAI's `SerperDevTool` class used in the other two projects), so `web_search()` here calls Serper's REST API directly instead.
 
 ## How the routing works
 
@@ -67,9 +69,11 @@ cp .env.example .env
 
 ```
 OPENAI_API_KEY=your-openai-key-here
+SERPER_API_KEY=your-serper-key-here
 ```
 
-Get one at https://platform.openai.com. No other API key is needed -- web search uses DuckDuckGo (`ddgs`), which is free and keyless.
+- OpenAI key: https://platform.openai.com
+- Serper key (free tier): https://serper.dev
 
 ## Run it
 

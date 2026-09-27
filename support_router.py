@@ -19,14 +19,16 @@
 # SETUP (run once in the terminal):
 #   pip install -r requirements.txt
 #
-#   Put your key in a .env file next to this script:
+#   Put your keys in a .env file next to this script:
 #     OPENAI_API_KEY=your-openai-key
+#     SERPER_API_KEY=your-serper-key      (from https://serper.dev - used for web search)
 #
 # RUN:
 #   streamlit run support_router.py
 # ---------------------------------------------------------------
 
 import asyncio
+import os
 from datetime import date
 
 import streamlit as st
@@ -43,22 +45,39 @@ load_dotenv()
 
 DEPARTMENTS = ["IT", "HR", "Compliance", "Admin", "Account"]
 
-# A web search tool using DuckDuckGo (free, no API key) -- same pattern as
-# notebook 08. Without this, every department agent only has what GPT-4o-mini
-# learned during training, which goes stale fast for anything date-specific
-# (tax deadlines, current policy changes, current pricing, etc.) -- confirmed
+# A web search tool backed by Serper (google.serper.dev) -- the same search
+# API used in buildathon-support-crew and linkedin-post-crew, for consistency
+# across projects, and generally more reliable/structured results than the
+# free DuckDuckGo library this started with. AutoGen's AssistantAgent takes
+# plain Python callables as tools (unlike CrewAI's SerperDevTool class), so
+# this calls Serper's REST API directly.
+#
+# Without this, every department agent only has what GPT-4o-mini learned
+# during training, which goes stale fast for anything date-specific (tax
+# deadlines, current policy changes, current pricing, etc.) -- confirmed
 # live: asked "what is the end date to submit tax filing?" and the Compliance
 # agent confidently answered with a 2022/2023 tax-year deadline instead of
 # admitting it didn't know the current one. Every agent below gets this tool
 # so it can look up a real, current answer instead of guessing from memory.
 def web_search(query: str) -> str:
     """Search the web for the query and return the top results as text."""
-    from ddgs import DDGS
+    import requests
 
-    results = DDGS().text(query, max_results=3)
+    api_key = os.getenv("SERPER_API_KEY")
+    if not api_key:
+        return "Web search is unavailable (SERPER_API_KEY is not set)."
+
+    response = requests.post(
+        "https://google.serper.dev/search",
+        headers={"X-API-KEY": api_key, "Content-Type": "application/json"},
+        json={"q": query},
+        timeout=15,
+    )
+    response.raise_for_status()
+    results = response.json().get("organic", [])[:3]
     if not results:
         return "No results found."
-    return "\n\n".join(f"{r['title']}\n{r['body']}" for r in results)
+    return "\n\n".join(f"{r.get('title', '')}\n{r.get('snippet', '')}" for r in results)
 
 
 _SEARCH_INSTRUCTION = (
