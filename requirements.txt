@@ -1,0 +1,14 @@
+# --- AutoGen: agents and teams ---
+autogen-agentchat>=0.7.5
+
+# --- OpenAI connector for AutoGen (gives us OpenAIChatCompletionClient) ---
+autogen-ext[openai]>=0.7.5
+
+# --- UI ---
+streamlit>=1.64.0
+
+# --- Free web search used by every department agent (DuckDuckGo, no API key) ---
+ddgs>=9.16.0
+
+# --- Reads OPENAI_API_KEY from the .env file ---
+python-dotenv>=1.2.3
