@@ -7,7 +7,7 @@ autogen-ext[openai]>=0.7.5
 # --- UI ---
 streamlit>=1.64.0
 
-# --- Web search used by every department agent (google.serper.dev) ---
+# --- Web search used by the agents in both app.py and support_router.py (google.serper.dev) ---
 requests>=2.34.2
 
 # --- Reads OPENAI_API_KEY / SERPER_API_KEY from the .env file ---
